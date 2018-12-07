@@ -174,8 +174,8 @@ module Csvlint
       def parse(value)
         if @pattern.nil?
           return nil if !@grouping_separator.nil? && value =~ Regexp.new("((^#{Regexp.escape(@grouping_separator)})|#{Regexp.escape(@grouping_separator)}{2})")
-          value.gsub!(@grouping_separator, "") unless @grouping_separator.nil?
-          value.gsub!(@decimal_separator, ".") unless @decimal_separator.nil?
+          value.to_s.gsub!(@grouping_separator, "") unless @grouping_separator.nil?
+          value.to_s.gsub!(@decimal_separator, ".") unless @decimal_separator.nil?
           if value =~ @regexp
             case value
             when "NaN"
