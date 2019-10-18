@@ -16,6 +16,7 @@ module Csvlint
     option :schema, banner: 'FILENAME OR URL', desc: 'Schema file', aliases: :s
     option :json, desc: 'Output errors as JSON', type: :boolean, aliases: :j
     option :werror, desc: 'Make all warnings into errors', type: :boolean, aliases: :w
+    option :verbose, desc: 'Output progress', type: :boolean, aliases: :v
 
     def validate(source = nil)
       source = read_source(source)
@@ -23,7 +24,7 @@ module Csvlint
       if source.nil?
         fetch_schema_tables(@schema, options)
       else
-        valid = validate_csv(source, @schema, options[:dump_errors], options[:json], options[:werror])
+        valid = validate_csv(source, @schema, options[:dump_errors], options[:json], options[:werror], options[:verbose])
         exit 1 unless valid
       end
     end
@@ -82,7 +83,7 @@ module Csvlint
             return_error "#{source} not found"
           end
         end
-        valid &= validate_csv(source, schema, options[:dump_errors], nil, options[:werror])
+        valid &= validate_csv(source, schema, options[:dump_errors], nil, options[:werror], options[:verbose])
       end
 
       exit 1 unless valid
@@ -129,10 +130,10 @@ module Csvlint
       exit 1
     end
 
-    def validate_csv(source, schema, dump, json, werror)
+    def validate_csv(source, schema, dump, json, werror, verbose)
       @error_count = 0
 
-      validator = if json === true
+      validator = if (json === true) or (verbose === false)
                     Csvlint::Validator.new(source, {}, schema)
                   else
                     Csvlint::Validator.new(source, {}, schema, lambda: report_lines)
