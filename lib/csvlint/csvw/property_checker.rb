@@ -39,13 +39,18 @@ module Csvlint
                 when "@type"
                   if value["@value"] && BUILT_IN_DATATYPES.include?(v)
                   elsif !value["@value"] && BUILT_IN_TYPES.include?(v)
-                  elsif v =~ /^([a-z]+):/ && NAMESPACES.include?(v.split(":")[0])
                   else
-                    # must be an absolute URI
-                    begin
-                      raise Csvlint::Csvw::MetadataError.new(), "common property has invalid @type (#{v})" if URI(v).scheme.nil?
-                    rescue
-                      raise Csvlint::Csvw::MetadataError.new(), "common property has invalid @type (#{v})"
+                    vs = (v.class == Array) ? v : [v]
+                    vs.each do |single_v|
+                      if single_v =~ /^([a-z]+):/ && NAMESPACES.include?(single_v.split(":")[0])
+                      else
+                        # must be an absolute URI
+                        begin
+                          raise Csvlint::Csvw::MetadataError.new(), "common property has invalid @type (#{single_v})" if URI(single_v).scheme.nil?
+                        rescue
+                          raise Csvlint::Csvw::MetadataError.new(), "common property has invalid @type (#{single_v})"
+                        end
+                      end
                     end
                   end
                 when "@id"
