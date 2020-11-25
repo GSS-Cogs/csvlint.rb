@@ -59,7 +59,7 @@ module Csvlint
         annotations = {}
         inherited_properties = {}
         common_properties = {}
-        base_url = URI(url.to_s.strip)
+        base_url = URI(URI.encode(url.to_s.strip))
         lang = "und"
 
         context = json["@context"]

@@ -45,6 +45,7 @@ module Csvlint
 
       def load_from_string(uri, string, output_errors = true)
         begin
+          uri = uri.gsub(/\s/, "\\ ")
           json = JSON.parse( string )
           if json["@context"]
             uri = "file:#{File.expand_path(uri)}" unless uri.to_s =~ /^http(s)?/
