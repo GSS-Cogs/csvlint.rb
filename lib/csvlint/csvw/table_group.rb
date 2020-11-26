@@ -59,6 +59,7 @@ module Csvlint
         annotations = {}
         inherited_properties = {}
         common_properties = {}
+        STDERR.puts "Warning: The path/url has whitespaces in it, please ensure its correctness. Proceeding with received path/url .." if url.to_s.strip =~ /\s/
         base_url = URI(URI.encode(url.to_s.strip))
         lang = "und"
 
