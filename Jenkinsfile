@@ -4,9 +4,10 @@ pipeline {
     }
     stages {
         stage('Test') {
-            agent
-            dockerfile {
-                args '-u root:root'
+            agent {
+                dockerfile {
+                    args '-u root:root'
+                }
             }
             steps {
                 sh "bundle install"
