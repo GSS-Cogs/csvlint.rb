@@ -3,8 +3,8 @@ pipeline {
         label 'master'
     }
     stages {
-        agent { dockerfile true }
         stage('Test') {
+            agent { dockerfile true }
             steps {
                 sh "bundle install"
                 sh "bundle exec cucumber -f junit -o test-results"
