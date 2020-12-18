@@ -3,14 +3,18 @@ pipeline {
         label 'master'
     }
     stages {
+        agent { dockerfile true }
         stage('Test') {
-            agent {
-                docker {
-                    image 'ruby:2.4.3-alpine'
-                }
-            }
             steps {
-                sh "bundle test"
+                sh "bundle install"
+                sh "bundle exec cucumber -f junit -o test-results"
+            }
+        }
+    }
+    post {
+        always {
+            script {
+                junit allowEmptyResults: true, testResults: 'test-results/*.xml'
             }
         }
     }
