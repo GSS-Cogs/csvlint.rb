@@ -11,6 +11,7 @@ pipeline {
             }
             steps {
                 sh "bundle install"
+                sh "rake"
                 sh "bundle exec cucumber -f junit -o test-results"
             }
         }
