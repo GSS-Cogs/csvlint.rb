@@ -29,6 +29,12 @@ When(/^I ask if there are warnings$/) do
   @warnings = @validator.warnings
 end
 
+When(/^I ask if there are warnings without providing schema$/) do
+  @csv_options ||= default_csv_options
+  @validator = Csvlint::Validator.new( @url, @csv_options)
+  @warnings = @validator.warnings
+end
+
 Then(/^there should be warnings$/) do
   expect( @warnings.count ).to be > 0
 end
