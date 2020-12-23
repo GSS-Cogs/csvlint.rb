@@ -9,7 +9,7 @@ Feature: Check inconsistent formatting
 "3","2","1"
     """
     And it is stored at the url "http://example.com/example1.csv"
-    And I ask if there are warnings
+    And I ask if there are warnings without providing schema
     Then there should be 1 warnings
     And that warning should have the type "inconsistent_values"
     And that warning should have the column "1"
@@ -23,7 +23,7 @@ Feature: Check inconsistent formatting
 "Boff","Giff","Goff"
     """
     And it is stored at the url "http://example.com/example1.csv"
-    And I ask if there are warnings
+    And I ask if there are warnings without providing schema
     Then there should be 1 warnings
     And that warning should have the type "inconsistent_values"
     And that warning should have the column "2"
@@ -37,7 +37,7 @@ Feature: Check inconsistent formatting
 "Boff444","Giff","Goff"
     """
     And it is stored at the url "http://example.com/example1.csv"
-    And I ask if there are warnings
+    And I ask if there are warnings without providing schema
     Then there should be 1 warnings
     And that warning should have the type "inconsistent_values"
     And that warning should have the column "1"
