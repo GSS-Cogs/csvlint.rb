@@ -9,9 +9,9 @@ pipeline {
             }
             steps {
                 sh "bundle install"
-                sh "rm bin/run-csvw-tests"
-                sh "rm features/csvw_validation_tests.feature"
-                sh "rm -r features/fixtures/csvw"
+                sh "if [ -f bin/run-csvw-tests ]; then rm bin/run-csvw-tests; fi"
+                sh "if [ -f features/csvw_validation_tests.feature ]; then rm features/csvw_validation_tests.feature; fi"
+                sh "if [ -d features/fixtures/csvw ]; then rm -Rf features/fixtures/csvw; fi"
                 sh "ruby features/support/load_tests.rb"
                 sh "rake"
                 sh "bundle exec cucumber -f junit -o test-results"
