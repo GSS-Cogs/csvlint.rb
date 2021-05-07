@@ -80,9 +80,6 @@ module Csvlint
 
       @errors += @schema.errors unless @schema.nil?
       @warnings += @schema.warnings unless @schema.nil?
-
-      @data = [] # it may be advisable to flush this on init?
-
       validate
     end
 
@@ -206,7 +203,6 @@ module Csvlint
           end
         end
       end
-      @data << row
     end
 
     def finish
@@ -329,10 +325,6 @@ module Csvlint
       else
         @line_breaks.uniq.first
       end
-    end
-
-    def row_count
-      data.count
     end
 
     def build_exception_messages(csvException, errChars, lineNo)
