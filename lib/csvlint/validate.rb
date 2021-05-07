@@ -50,7 +50,7 @@ module Csvlint
 
     include Csvlint::ErrorCollector
 
-    attr_reader :encoding, :content_type, :extension, :headers, :link_headers, :dialect, :csv_header, :schema, :data, :current_line
+    attr_reader :encoding, :content_type, :extension, :headers, :link_headers, :dialect, :csv_header, :schema, :row_count, :current_line
 
     ERROR_MATCHERS = {
         "Missing or stray quote" => :stray_quote,
@@ -81,8 +81,7 @@ module Csvlint
       @errors += @schema.errors unless @schema.nil?
       @warnings += @schema.warnings unless @schema.nil?
 
-      @data = [] # it may be advisable to flush this on init?
-
+      @row_count = 0
       validate
     end
 
@@ -206,7 +205,7 @@ module Csvlint
           end
         end
       end
-      @data << row
+      @row_count += 1
     end
 
     def finish
@@ -329,10 +328,6 @@ module Csvlint
       else
         @line_breaks.uniq.first
       end
-    end
-
-    def row_count
-      data.count
     end
 
     def build_exception_messages(csvException, errChars, lineNo)
