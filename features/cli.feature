@@ -168,7 +168,8 @@ Feature: CSVlint CLI
 NO JSON HERE SON
     """
     And the schema is stored at the url "http://example.com/schema.json"
-    Then nothing should be outputted to STDERR
+    # This case is commented since error logging is now enabled to understand the error situation better
+    # Then nothing should be outputted to STDERR 
     When I run `csvlint http://example.com/example1.csv --schema http://example.com/schema.json`
     And the output should contain "invalid metadata: malformed JSON"
 
