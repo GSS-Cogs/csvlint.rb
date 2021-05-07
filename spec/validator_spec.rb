@@ -16,6 +16,7 @@ describe Csvlint::Validator do
     expect(validator.valid?).to eql(true)
     expect(validator.instance_variable_get("@expected_columns")).to eql(3)
     expect(validator.instance_variable_get("@col_counts").count).to eql(3)
+    expect(validator.row_count).to eql(3)
   end
 
   it "should validate from a file path" do
@@ -24,6 +25,7 @@ describe Csvlint::Validator do
     expect(validator.valid?).to eql(true)
     expect(validator.instance_variable_get("@expected_columns")).to eql(3)
     expect(validator.instance_variable_get("@col_counts").count).to eql(3)
+    expect(validator.row_count).to eql(3)
   end
 
   it "should validate from a file path including whitespace" do
@@ -45,7 +47,7 @@ describe Csvlint::Validator do
     # TODO multiple lines permits testing of warnings
     # TODO need more assertions in each test IE @formats
     # TODO the phrasing of col_counts if only consulting specs might be confusing
-    # TODO ^-> col_counts and data.size should be equivalent, but only data is populated outside of if row.nil?
+    # TODO ^-> col_counts and row_count should be equivalent, but only data is populated outside of if row.nil?
     # TODO ^- -> and its less the size of col_counts than the homogeneity of its contents which is important
 
     it ".each() -> parse_contents method validates a well formed CSV" do
@@ -59,6 +61,7 @@ describe Csvlint::Validator do
       # TODO in its formats object but is provided with 5 rows (with one nil row) [uses validation_warnings_steps.rb]
       expect(validator.instance_variable_get("@expected_columns")).to eql(3)
       expect(validator.instance_variable_get("@col_counts").count).to eql(4)
+      expect(validator.row_count).to eql(4)
 
     end
 
@@ -146,6 +149,7 @@ describe Csvlint::Validator do
       expect(validator.valid?).to eql(true)
       expect(validator.instance_variable_get("@expected_columns")).to eql(3)
       expect(validator.instance_variable_get("@col_counts").count).to eql(4)
+      expect(validator.row_count).to eql(4)
       expect(validator.info_messages.count).to eql(1)
     end
 
@@ -157,6 +161,7 @@ describe Csvlint::Validator do
       expect(validator.valid?).to eql(false)
       expect(validator.instance_variable_get("@expected_columns")).to eql(3)
       expect(validator.instance_variable_get("@col_counts").count).to eql(4)
+      expect(validator.row_count).to eql(5)
       expect(validator.info_messages.count).to eql(1)
       expect(validator.errors.count).to eql(1)
       expect(validator.errors.first.type).to eql(:whitespace)
@@ -572,6 +577,15 @@ describe Csvlint::Validator do
         :body => File.read(File.join(File.dirname(__FILE__),'..','features','fixtures','valid.csv')))
     validator = Csvlint::Validator.new("http://example.com/example.csv")
     expect( validator.valid? ).to eql(true)
+    expect( validator.row_count ).to eql 3
+  end
+
+  it "should count the total number of rows read" do
+    stub_request(:get, "http://example.com/example.csv").to_return(:status => 200,
+        :headers=>{"Content-Type" => "text/csv; header=present"},
+        :body => File.read(File.join(File.dirname(__FILE__),'..','features','fixtures','valid.csv')))
+    validator = Csvlint::Validator.new("http://example.com/example.csv")
+    expect(validator.row_count).to eq(3)
   end
 
   it "should limit number of lines read" do
@@ -580,6 +594,7 @@ describe Csvlint::Validator do
     :body => File.read(File.join(File.dirname(__FILE__),'..','features','fixtures','valid.csv')))
     validator = Csvlint::Validator.new("http://example.com/example.csv", {}, nil, limit_lines: 2)
     expect( validator.valid? ).to eql(true)
+    expect( validator.row_count ).to eql 2
   end
 
   context "with a lambda" do
