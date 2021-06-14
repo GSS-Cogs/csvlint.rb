@@ -66,7 +66,7 @@ module Csvlint
                   raise Csvlint::Csvw::MetadataError.new(), "common property with @value has properties other than @language or @type" unless value.except("@type").except("@language").except("@value").empty?
                 when "@language"
                   raise Csvlint::Csvw::MetadataError.new(), "common property with @language lacks a @value" unless value["@value"]
-                  raise Csvlint::Csvw::MetadataError.new(), "common property has invalid @language (#{v})" unless v =~ BCP47_LANGUAGE_REGEXP || v.nil?
+                  raise Csvlint::Csvw::MetadataError.new(), "common property has invalid @language (#{v})" unless v =~ Regexp.new(BCP47_LANGUAGE_REGEXP) || v.nil?
                 else
                   if p[0] == "@"
                     raise Csvlint::Csvw::MetadataError.new(), "common property has property other than @id, @type, @value or @language beginning with @ (#{p})"
