@@ -8,25 +8,37 @@ require 'thor'
 
 require 'active_support/inflector'
 
+require 'builder'
+
 module Csvlint
   class Cli < Thor
     desc 'myfile.csv OR csvlint http://example.com/myfile.csv', 'Supports validating CSV files to check their syntax and contents'
 
     option :dump_errors, desc: 'Pretty print error and warning objects.', type: :boolean, aliases: :d
     option :schema, banner: 'FILENAME OR URL', desc: 'Schema file', aliases: :s
-    option :json, desc: 'Output errors as JSON', type: :boolean, aliases: :j
+    option :format, desc: 'Output format for errors: json or junit', aliases: :f
     option :werror, desc: 'Make all warnings into errors', type: :boolean, aliases: :w
     option :verbose, desc: 'Output progress', type: :boolean, aliases: :v
 
     def validate(source = nil)
       source = read_source(source)
       @schema = get_schema(options[:schema]) if options[:schema]
-      if source.nil?
-        fetch_schema_tables(@schema, options)
-      else
-        valid = validate_csv(source, @schema, options[:dump_errors], options[:json], options[:werror], options[:verbose])
-        exit 1 unless valid
+      if options.key?(:format) and options[:format] != 'json' and options[:format] != 'junit'
+        return_error("Output format for errors must be json or junit.")
       end
+      if options[:format] === 'junit'
+        print '<?xml version="1.0" encoding="UTF-8"?>'
+        print '<testsuites name="csvlint">'
+      end
+      if source.nil?
+        valid = fetch_schema_tables(@schema, options)
+      else
+        valid = validate_csv(source, @schema, options[:dump_errors], options[:format], options[:werror], options[:verbose])
+      end
+      if options[:format] === 'junit'
+        print '</testsuites>'
+      end
+      exit 1 unless valid
     end
 
     def help
@@ -83,10 +95,10 @@ module Csvlint
             return_error "#{source} not found"
           end
         end
-        valid &= validate_csv(source, schema, options[:dump_errors], nil, options[:werror], options[:verbose])
+        valid &= validate_csv(source, schema, options[:dump_errors], options[:format], options[:werror], options[:verbose])
       end
 
-      exit 1 unless valid
+      valid
     end
 
     def print_error(index, error, dump, color)
@@ -130,14 +142,15 @@ module Csvlint
       exit 1
     end
 
-    def validate_csv(source, schema, dump, json, werror, verbose)
+    def validate_csv(source, schema, dump, format, werror, verbose)
       @error_count = 0
-
-      validator = if (json === true) or (verbose === false)
+      @start = Time.now
+      validator = if !format.nil? or (verbose === false)
                     Csvlint::Validator.new(source, {}, schema)
                   else
                     Csvlint::Validator.new(source, {}, schema, lambda: report_lines)
                   end
+      @duration = Time.now - @start
 
       csv = if source.class == String
               source
@@ -147,7 +160,15 @@ module Csvlint
               'CSV'
             end
 
-      if json === true
+      if format === 'junit'
+        x = Builder::XmlMarkup.new
+        xml = x.testsuite(:name => csv, :failures => validator.errors.length, :time => @duration) {
+          validator.errors.map {
+            |v| as_xml(x, v, "failure", csv)
+          }
+        }
+        print xml
+      elsif format == 'json'
         json = {
           validation: {
             state: validator.valid? ? 'valid' : 'invalid',
@@ -169,6 +190,24 @@ module Csvlint
 
       return false if werror && !validator.warnings.empty?
       validator.valid?
+    end
+
+    def as_xml(builder, validation, level, filename)
+      description = """Validation #{level}: #{validation.type}
+at row #{validation.row}, column #{validation.column}"""
+      if validation.column && @schema && @schema.class == Csvlint::Schema
+        if @schema.fields[validation.column - 1] != nil
+          description += ", #{@schema.fields[validation.column - 1].name}: "
+        end
+      end
+      if validation.content
+        description += ": #{validation.content}"
+      end
+      builder.testcase(:name => validation.type.to_s, :classname => filename) {
+        builder.tag!(level, description,
+                     :message => "#{validation.type} row #{validation.row} col #{validation.column}",
+                     :type => validation.type.to_s)
+      }
     end
 
     def hashify(error)

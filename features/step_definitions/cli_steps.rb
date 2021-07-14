@@ -1,3 +1,6 @@
+require "active_support"
+require "active_support/core_ext/hash"
+
 Given(/^I have stubbed stdin to contain "(.*?)"$/) do |file|
   expect(STDIN).to receive(:read).and_return(File.read(file))
 end
@@ -34,4 +37,8 @@ end
 
 Then(/^error (\d+) should have the constraint "(.*?)" "(.*?)"$/) do |index, k, v|
   expect(@json['validation']['errors'][index.to_i - 1]['constraints'][k].to_s).to eq(v)
+end
+
+Then(/^the output should be XML$/) do
+  @xml = Hash.from_xml(all_stdout)
 end
