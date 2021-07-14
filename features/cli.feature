@@ -78,7 +78,7 @@ Feature: CSVlint CLI
     "Foo",	"Bar"	,	"Baz"
     """
     And it is stored at the url "http://example.com/example1.csv"
-    When I run `csvlint http://example.com/example1.csv --json`
+    When I run `csvlint http://example.com/example1.csv --format json`
     Then the output should contain JSON
     And the JSON should have a state of "invalid"
     And the JSON should have 1 error
@@ -148,7 +148,7 @@ Feature: CSVlint CLI
 }
     """
     And the schema is stored at the url "http://example.com/schema.json"
-    When I run `csvlint http://example.com/example1.csv --schema http://example.com/schema.json --json`
+    When I run `csvlint http://example.com/example1.csv --schema http://example.com/schema.json --format json`
     Then the output should contain JSON
     And the JSON should have a state of "invalid"
     And the JSON should have 1 error
@@ -257,3 +257,24 @@ NO JSON HERE SON
     When I run `csvlint --schema http://w3c.github.io/csvw/tests/countries.json`
     Then the output should contain "http://w3c.github.io/csvw/tests/countries.csv is VALID"
     And the output should contain "http://w3c.github.io/csvw/tests/country_slice.csv is VALID"
+
+  Scenario: Schema errors with JUnit
+    Given I have a CSV with the following content:
+    """
+"Bob","1234","bob@example.org"
+"Alice","5","alice@example.com"
+    """
+    And it is stored at the url "http://example.com/example1.csv"
+    And I have a schema with the following content:
+    """
+{
+  "fields": [
+          { "name": "Name", "constraints": { "required": true } },
+          { "name": "Id", "constraints": { "required": true, "minLength": 3 } },
+          { "name": "Email", "constraints": { "required": true } }
+    ]
+}
+    """
+    And the schema is stored at the url "http://example.com/schema.json"
+    When I run `csvlint http://example.com/example1.csv --schema http://example.com/schema.json --format junit`
+    Then the output should be XML
