@@ -144,13 +144,13 @@ module Csvlint
 
     def validate_csv(source, schema, dump, format, werror, verbose)
       @error_count = 0
-      @start = Time.now
+      start = Time.now
       validator = if !format.nil? or (verbose === false)
                     Csvlint::Validator.new(source, {}, schema)
                   else
                     Csvlint::Validator.new(source, {}, schema, lambda: report_lines)
                   end
-      @duration = Time.now - @start
+      duration = Time.now - start
 
       csv = if source.class == String
               source
@@ -162,7 +162,7 @@ module Csvlint
 
       if format === 'junit'
         x = Builder::XmlMarkup.new
-        xml = x.testsuite(:name => csv, :failures => validator.errors.length, :time => @duration) {
+        xml = x.testsuite(:name => csv, :failures => validator.errors.length, :time => duration) {
           validator.errors.map {
             |v| as_xml(x, v, "failure", csv)
           }
